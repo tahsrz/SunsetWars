@@ -1,0 +1,3 @@
+# Inventor's Workbench - Targets
+# Paste URLs here (one per line). YouTube or Web URLs supported.
+# The Forge will automatically ingest them into your workbench cartridge.

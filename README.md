@@ -14,10 +14,11 @@ Moving from the "everything everywhere" approach of Java to the streamlined powe
 
 ## 🎯 The Philosophy: Token Discipline
 Standard RAG often "regurgitates" entire documents into an LLM's context window, wasting thousands of tokens and degrading response quality. TAH uses a **Surgical Retrieval** model:
-1. **Edge Detection**: A local C# terminal monitors your queries via a probabilistic Bloom filter (sub-millisecond latency).
-2. **Surgical Extraction**: Only the most relevant snippets (shards) are pulled using a hybrid **BM25 + N-Grams** ranking system.
-3. **Expert Handshake**: These precise shards are injected into the LLM's prompt, making it an instant expert for that specific turn.
+ **Edge Detection**: A local C# terminal monitors your queries via a probabilistic Bloom filter (sub-millisecond latency).
+ **Surgical Extraction**: Only the most relevant snippets (shards) are pulled using a hybrid **BM25 + N-Grams** ranking system.
+ **Expert Handshake**: These precise shards are injected into the LLM's prompt, making it an instant expert for that specific turn.
 
+WIP Inventor's Workbench: Drop folder with a text file called targets.txt background pyScript fetches new urls, transcribes/scrapes using Ozriel Protocol (see SunsetPulse)
 
 
 ## 🛠️ Technical Architecture

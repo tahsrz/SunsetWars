@@ -4,6 +4,14 @@ import re
 from cityhash import get_tah_indices, normalize
 
 class TAHBuilder:
+    # Stopwords that should never be indexed as isolated Unigrams Commandments
+    NEGATIVE_UNIGRAMS = {
+        'the', 'and', 'for', 'with', 'under', 'over', 'from', 'this', 'that',
+        'these', 'those', 'is', 'are', 'was', 'were', 'been', 'being', 'have',
+        'has', 'had', 'what', 'how', 'where', 'when', 'which', 'who', 'whom',
+        'common', 'rules', 'general', 'about', 'above', 'below', 'into', 'onto'
+    }
+
     def __init__(self, target_fp=0.001, expected_elements=1000):
         self.target_fp = target_fp
         self.n = expected_elements
@@ -30,11 +38,16 @@ class TAHBuilder:
         word_count = len(words)
         
         # Generate N-Grams (Unigrams, Bigrams, Trigrams)
-        unigrams = words
+        unigrams = [w for w in words if w not in self.NEGATIVE_UNIGRAMS and len(w) > 2]
         bigrams = self._get_ngrams(words, 2)
         trigrams = self._get_ngrams(words, 3)
         
-        all_shards_ngrams = unigrams + bigrams + trigrams
+        # Negative N-Gram Logic: We only index Bigrams/Trigrams if they 
+        # contain at least one non-stopword to ensure semantic value.
+        def is_vital(phrase):
+            return any(w not in self.NEGATIVE_UNIGRAMS for w in phrase.split())
+
+        all_shards_ngrams = unigrams + [b for b in bigrams if is_vital(b)] + [t for t in trigrams if is_vital(t)]
         
         # If specific keywords provided, prioritize them
         indexing_terms = keywords if keywords else all_shards_ngrams
