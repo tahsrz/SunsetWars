@@ -20,7 +20,7 @@ class TAHQuery:
     def _load_metadata(self):
         # 1. Read Header (64 bytes)
         header = self.file.read(64)
-        magic, version, self.k, _, self.m, self.shard_count, self.avg_shard_len = struct.unpack('<I H B B Q I I', header[:28])
+        magic, version, self.k, _, self.m, self.shard_count, self.avg_shard_len = struct.unpack('<I H B B Q I I', header[:24])
         
         if magic != 0x54414821:
             raise ValueError("Invalid TAH cartridge.")

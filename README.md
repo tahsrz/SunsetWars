@@ -1,75 +1,90 @@
-# TAH (Terminal AI Hub) - v1.1
+# TAH (Tactical Atlas & Heuristics) - v1.1
 
+**"Surgical Context Injection for Token-Disciplined Power Users"**
 
-⚡ The "Just-In-Time" (JIT) Contextualizer 
+TAH is a high-performance AI Gateway. It enables LLMs to gain instant domain expertise via local **Knowledge Cartridges (.tah)**, bypassing the latency of vector databases and the brute force token tax of massive context windows. By utilizing probabilistic data structures and surgical byte-offset seeking, TAH finds the "Knowledge Bullseye" in sub-milliseconds.
 
+---
 
-Inspired by the C# JIT Compiler, just as the CommonLanguageRuntime transforms MSIL into native code at the very last microsecond for peak performance, our JIT Contextualizer waits until the query hits the wire to "emit" the perfect knowledge shard.
+## 🎯 The Core Philosophy: Token Discipline
+Standard RAG often "regurgitates" entire documents into an LLM's context window. TAH uses a **Surgical Retrieval** model:
+1.  **Edge Detection**: A global Bloom filter determines if a query exists in a cartridge before a single byte of text is read.
+2.  **Surgical Extraction**: Utilizing C#-inspired Just-In-Time (JIT) principles, the system jumps to specific byte-offsets to extract only the relevant "shards" of data.
+3.  **Expert Handshake**: Precise shards are injected into the LLM's prompt, making it an instant expert for that specific turn.
 
-TAH is a high-performance, edge-based AI Gateway. It enables LLMs to gain instant domain expertise via local **Knowledge Cartridges (.tah)**, bypassing the latency of vector databases and the brute force token usage of massive CLIs.
+---
 
+## 🛠️ Technical Architecture: The .tah Spec (v2.0)
+The `.tah` file is a custom binary format structured for maximum **"Seek"** performance:
+-   **Header (64 bytes)**: Pulse ID (`0x54414821`), Versioning, and metadata ($m$, $k$, AvgWordCount).
+-   **Global Bloom Filter**: A probabilistic bit-array mapping all keywords in the library.
+-   **Shard Index (88 bytes/entry)**: A lookup table containing `Offset | Length | WordCount | Local_Bloom`.
+-   **Local Bloom Filters**: Per-shard 512-bit filters for pinpoint surgical accuracy.
+-   **Data Shards**: Raw, UTF-8 encoded tactical knowledge.
 
-Moving from the "everything everywhere" approach of Java to the streamlined power of C# allowed for a more robust, event-driven architecture. By leveraging C#’s high-performance memory management and asynchronous streams, we’ve built a system that feels alive—dynamic, type-safe, and incredibly fast. It’s not just retrieval; it’s contextual execution.
+---
 
+## 🏗️ The Builder Suite (Python)
+Located in `/builder`. Uses `CityHash64` with strict 64-bit parity for cross-platform consistency.
 
-## 🎯 The Philosophy: Token Discipline
-Standard RAG often "regurgitates" entire documents into an LLM's context window, wasting thousands of tokens and degrading response quality. TAH uses a **Surgical Retrieval** model:
- **Edge Detection**: A local C# terminal monitors your queries via a probabilistic Bloom filter (sub-millisecond latency).
- **Surgical Extraction**: Only the most relevant snippets (shards) are pulled using a hybrid **BM25 + N-Grams** ranking system.
- **Expert Handshake**: These precise shards are injected into the LLM's prompt, making it an instant expert for that specific turn.
+### 1. `pdf_builder.py`
+Ingests massive PDFs (e.g., SICP, Medical Encyclopedias), chunks them into semantic shards, and indexes them with **N-Gram** support (Unigrams, Bigrams, Trigrams).
 
-WIP Inventor's Workbench: Drop folder with a text file called targets.txt background pyScript fetches new urls, transcribes/scrapes using Ozriel Protocol (see SunsetPulse)
+### 2. `web_builder.py` (v1.2 - Ozriel Protocol)
+A recursive intelligence collector that follows the **Ozriel Protocol**:
+-   **Semantic Vitality Checks**: Evaluates the "life" of a container, prioritizing technical density over navigational boilerplate.
+-   **Recursive Discovery**: Follows high-vitality links to map an entire domain's expertise.
+-   **Ontological Anchoring**: Anchors to core knowledge nodes while ignoring ads and footers.
 
+### 3. `youtube_ingestor.py`
+Turns any technical lecture into a cartridge via local **OpenAI Whisper** transcription.
 
-## 🛠️ Technical Architecture
+---
 
-### 1. The .tah Cartridge (Binary Format v2.0)
-- **Global Bloom Filter**: Maps keywords across the entire document library.
-- **Local Bloom Filters**: Per-shard filters (512-bit) for surgical pinpointing.
-- **BM25 Metadata**: Stores word counts and average lengths for probabilistic ranking.
-- **N-Gram Indexing**: Supports Unigrams, Bigrams, and Trigrams for phrase matching.
+## 🖥️ The Retrieval Layer
 
-### 2. The Builder Suite (Python)
-Located in `/builder`. 
-- `pdf_builder.py`: Ingests PDFs, chunks text, and generates cartridges.
-- `web_builder.py`: **[v1.1]** Extracts semantic content from URLs, ignoring navigational noise and ads.
-- `medical_builder.py`: Example script for building large-scale encyclopedias.
+### 1. The Terminal (C#/.NET)
+Located in `/terminal`. A high-performance, asynchronous client optimized for the CLR.
+-   **BM25 Ranking**: Uses Best Matching 25 to score shards based on term rarity and document length.
+-   **Stopword Filtering**: Automatically ignores "noise" words to prevent broad context dumping.
 
-### 3. The Terminal (C#/.NET)
-Located in `/terminal`. 
-- **Ranked Retrieval**: Uses BM25 to score shards so you only get the "Knowledge Bullseye."
-- **Stopword Filtering**: Automatically ignores noise words to focus on technical jargon.
+### 2. The Agent Hook (`tah_query.py`)
+The bridge to the **Gemini CLI**. Allows the AI agent to programmatically search cartridges and inject ground truth.
 
-### 4. The Hub (Downloader)
-Located in `/downloader`. 
-- `tah_hub.py`: A lightweight utility to fetch pre-built cartridges from remote repositories with binary integrity validation.
+---
+
+## 🧪 The Inventor's Workbench
+Located in `/workbench`. A "Set and Forget" intelligence pipeline.
+1.  **`targets.txt`**: A drop-file for URLs (Web or YouTube).
+2.  **`forge.py`**: A background engine that monitors targets and automatically builds the `workbench_expertise.tah` cartridge.
+
+---
 
 ## 📦 Getting Started
 
-### Creating a Cartridge from a PDF
+### 1. The Workbench (Automated Forge)
+Keep the Forge running to automatically digest links from `workbench/targets.txt`:
 ```powershell
-python builder/pdf_builder.py "path/to/your/document.pdf"
+python workbench/forge.py
 ```
 
-### Creating a Cartridge from a URL [v1.1]
+### 2. Manual Cartridge Building (PDF)
+Turn your local documents into Expertise Cartridges:
 ```powershell
-python builder/web_builder.py "https://docs.microsoft.com/en-us/dotnet/csharp/" "csharp_docs"
+python builder/pdf_builder.py "C:\Users\Taz\documents\deed_recording_master_tarrant.pdf" "tarrant_deeds"
 ```
 
-### Downloading a Cartridge
-```powershell
-python downloader/tah_hub.py "https://example.com/expert_knowledge.tah"
-```
-
-### Running the Terminal
+### 3. The Retrieval Layer (High-Performance CLI)
+Launch the C# Terminal to browse and query your cartridges:
 ```powershell
 .\terminal\tah.exe
 ```
 
-## 🏗️ Developer Stack
-- **Hashing**: CityHash64 (Strict 64-bit parity).
-- **Ranking**: BM25 (Best Matching 25) + Bigram/Trigram Boosting.
-- **Platform**: Python (Ingestion) / C# (Client).
+### 4. Agentic Interaction (The Hook)
+Query a cartridge directly through the Gemini CLI for surgical context injection:
+```powershell
+python builder/tah_query.py cartridges/sicp_expert.tah "metacircular evaluator"
+```
 
 ---
 *SunsetPulse Collective 2026.*
