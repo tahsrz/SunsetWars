@@ -4,13 +4,15 @@
 
 TAH is a high-performance AI Gateway. It enables LLMs to gain instant domain expertise via local **Knowledge Cartridges (.tah)**, bypassing the latency of vector databases and the brute force token tax of massive context windows. By utilizing probabilistic data structures and surgical byte-offset seeking, TAH finds the "Knowledge Bullseye" in sub-milliseconds.
 
----
+
+---By moving away from traditional "Exact Matching" (SQL) and "Semantic Guessing" (Vector DBs), we at the Sunset Collective are creating a third category: Deterministic Edge Retrieval.
+It's NoSQL for the Agentic Age
 
 ## 🎯 The Core Philosophy: Token Discipline
 Standard RAG often "regurgitates" entire documents into an LLM's context window. TAH uses a **Surgical Retrieval** model:
-1.  **Edge Detection**: A global Bloom filter determines if a query exists in a cartridge before a single byte of text is read.
-2.  **Surgical Extraction**: Utilizing C#-inspired Just-In-Time (JIT) principles, the system jumps to specific byte-offsets to extract only the relevant "shards" of data.
-3.  **Expert Handshake**: Precise shards are injected into the LLM's prompt, making it an instant expert for that specific turn.
+  **Edge Detection**: A global Bloom filter determines if a query exists in a cartridge before a single byte of text is read.
+  **Surgical Extraction**: Utilizing C#-inspired Just-In-Time (JIT) principles, the system jumps to specific byte-offsets to extract only the relevant "shards" of data.
+  **Expert Handshake**: Precise shards are injected into the LLM's prompt, making it an instant expert for that specific turn.
 
 ---
 
