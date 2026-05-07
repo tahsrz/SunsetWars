@@ -1,0 +1,14 @@
+# TAH Persistent Memories
+# Add one memory per line. Lines starting with # are ignored.
+
+Tahsin's favorite coffee is a light roast Ethiopian Yirgacheffe.
+The project TAH stands for Tactical Atlas & Heuristics.
+Remember to check the Bloom filter before reading binary chunks from disk.
+CityHash64 is used for cross-platform consistency in TAH.
+The SICP expert cartridge is located at cartridges/sicp_expert.tah.
+Ozriel Protocol v1.2 is used for recursive intelligence collection.
+The .tah file v3.0 supports polymorphic shards (Text, Coords, Image, Vector).
+Sunset Wars is the primary development focus for 2026.
+The PulseCommunicator bridge is the next major architectural milestone.
+
+Tahsin's latest intelligence update: The watcher is active.
