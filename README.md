@@ -1,9 +1,12 @@
-# TAH (Tactical Atlas & Heuristics) - v1.1
+# TAH (Tactical Atlas & Heuristics) - v1.2
 
 **"Surgical Context Injection for Token-Disciplined Power Users"**
 
+
 TAH is a high-performance AI Gateway. It enables LLMs to gain instant domain expertise via local **Knowledge Cartridges (.tah)**, bypassing the latency of vector databases and the brute force token tax of massive context windows. By utilizing probabilistic data structures and surgical byte-offset seeking, TAH finds the "Knowledge Bullseye" in sub-milliseconds.
 
+
+**There are multiple .tah files in the cartridges directory. You may copy them into any LLM and it will translate the BINARY file into contextual knowledge.**
 
 ---By moving away from traditional "Exact Matching" (SQL) and "Semantic Guessing" (Vector DBs), we at the Sunset Collective are creating a third category: Deterministic Edge Retrieval.
 It's NoSQL for the Agentic Age
