@@ -12,3 +12,5 @@ Sunset Wars is the primary development focus for 2026.
 The PulseCommunicator bridge is the next major architectural milestone.
 
 Tahsin's latest intelligence update: The watcher is active.
+Jamie generated a high-stakes re-engagement hook for John Austin (Score 45 -> 8) on May 13, 2026.
+The Metacircular Evaluator port to TypeScript is in progress.
