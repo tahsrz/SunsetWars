@@ -1,51 +1,42 @@
-# TAH File Format Specification (v2.0)
+# TAH File Format Specification (v3.0 - Polymorphic)
 
 ## Overview
-The `.tah` file is a binary format designed for efficient, local knowledge retrieval using Bloom filters. v2.0 introduces BM25 scoring support and N-Gram indexing.
+The `.tah` file v3.0 extends the probabilistic retrieval model to non-textual data types using a **Data-Directed Shard Index**. This allows a single cartridge to hold mixed-media "Specialized Knowledge."
 
 ## 1. Binary Header (64 Bytes)
-The header is always 64 bytes, using Little-Endian byte order.
+The header remains 64 bytes.
 
 | Offset | Size (Bytes) | Field Name | Description |
 | :--- | :--- | :--- | :--- |
 | 0 | 4 | Magic Number | `0x54414821` ("TAH!") |
-| 4 | 2 | Version | `0x0200` (2.0) |
+| 4 | 2 | Version | `0x0300` (3.0) |
 | 6 | 1 | k | Number of hash functions. |
-| 7 | 1 | Padding | Reserved (Set to 0). |
-| 8 | 8 | m | Bloom filter size in bits (unsigned 64-bit). |
-| 16 | 4 | Shard Count | Number of data shards in the file. |
-| 20 | 4 | Avg Shard Len | Average word count per shard (for BM25). |
-| 24 | 40 | Reserved | Padding for 64-byte alignment. |
+| 7 | 1 | Default Type | Default shard type (0=Text). |
+| 8 | 8 | m | Global Bloom filter size in bits. |
+| 16 | 4 | Shard Count | Total shards. |
+| 20 | 4 | Avg Complexity | Avg word count (Text) or precision (Coords). |
+| 24 | 40 | Reserved | Padding. |
 
-## 2. Bloom Filter Area
-Starts at offset 64.
-- Size: `ceil(m / 8)` bytes.
+## 2. Global Bloom Filter Area
+Starts at offset 64. Maps all keys (text tokens, geohash prefixes, visual hashes).
 
-## 3. Shard Index
-Starts immediately after the Bloom Filter Area.
+## 3. Shard Index (v3.0 Polymorphic)
 Contains `Shard Count` entries. Each entry is **80 bytes**.
 
 | Offset | Size (Bytes) | Field Name | Description |
 | :--- | :--- | :--- | :--- |
-| 0 | 8 | Offset | Absolute byte offset to the start of the shard. |
-| 8 | 4 | Length | Length of the shard in bytes. |
-| 12 | 4 | Word Count | Number of words in this shard (for BM25). |
-| 16 | 64 | Local Bloom Filter | Shard-specific bit-array for surgical keyword matching. |
+| 0 | 1 | Type Tag | `0=Text`, `1=Coordinate`, `2=Image`, `3=Vector`. |
+| 1 | 7 | Reserved | Padding for alignment. |
+| 8 | 8 | Offset | Absolute byte offset to data. |
+| 16 | 4 | Length | Length of the shard data. |
+| 20 | 4 | Meta/Score | WordCount (Text), Z-Order (Coords), etc. |
+| 24 | 56 | Specialized Index | 448-bit bit-array (Bloom for Text, Spatial for Coords). |
 
-## 4. Data Shards
-Raw UTF-8 encoded text data.
+## 4. Specialized Indexing Logic
+- **Text (Tag 0)**: 448-bit Bloom Filter, $k=4$.
+- **Coordinate (Tag 1)**: Centroid Geohash (bits 0-31) + Bounding Radius (bits 32-63) + Precision Mask.
+- **Image (Tag 2)**: 64-bit pHash + 384-bit feature bloom.
 
-## 5. Hashing Logic (N-Grams)
-1. **Unigrams**: Individual words (e.g., "rejection").
-2. **Bigrams**: Pairs of words (e.g., "rejection reasons").
-3. **Trigrams**: Triplets of words (e.g., "common rejection reasons").
-All N-Grams are normalized (lower, strip) before hashing.
-Double hashing is used for both global and local filters.
-
-**Local Filter Config**: 64 bytes (512 bits), $k=4$.
-
-## 6. Normalization
-Before hashing, all input strings must be:
-- Converted to lowercase (`.lower()`).
-- Stripped of leading/trailing whitespace (`.strip()`).
-- Encoded as UTF-8.
+## 5. Abstraction Barriers (SICP Principles)
+The retrieval layer MUST NOT assume the structure of a shard. It must dispatch based on the `Type Tag` to a specific **Generic Operator** (e.g., `calculate_relevance`).
+- `get_relevance(shard, query)` -> Dispatch to `bm25_score` or `haversine_distance` or `hamming_distance`.
