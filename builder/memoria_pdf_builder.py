@@ -1,15 +1,15 @@
 import os
 import re
 from pypdf import PdfReader
-from tah_builder import TAHBuilder
+from tah_builder import TAHBuilder, OzrielSegmenter
 
 class PDFIngestor:
+    """TAH PDF Ingestor v3.0 (Ozriel Protocol)"""
     def __init__(self, target_fp=0.0001, shard_size=1000):
         self.target_fp = target_fp
         self.shard_size = shard_size
 
     def extract_text(self, pdf_path):
-        """Extracts text from PDF and returns a list of page contents."""
         reader = PdfReader(pdf_path)
         pages = []
         for page in reader.pages:
@@ -18,37 +18,22 @@ class PDFIngestor:
                 pages.append(text)
         return pages
 
-    def chunk_text(self, text_list):
-        """Chunks long text into shards of roughly shard_size characters."""
-        full_text = "\n".join(text_list)
-        # Simple chunking by character count, trying to break at sentences
-        shards = []
-        start = 0
-        while start < len(full_text):
-            end = start + self.shard_size
-            if end < len(full_text):
-                # Look for a period to end the shard cleanly
-                last_period = full_text.rfind('.', start, end + 100)
-                if last_period != -1 and last_period > start:
-                    end = last_period + 1
-            
-            shards.append(full_text[start:end].strip())
-            start = end
-        return shards
-
     def build_cartridge(self, pdf_path, cartridge_name):
-        print(f"Ingesting: {pdf_path}")
+        print(f"[Ingesting v3.0] {pdf_path}")
         pages = self.extract_text(pdf_path)
-        shards = self.chunk_text(pages)
+        full_text = "\n".join(pages)
         
-        # Estimate keyword count (Roughly 10 unique keywords per shard)
-        expected_elements = len(shards) * 15
+        # Use Ozriel semantic segmentation
+        shards = OzrielSegmenter.segment(full_text, max_shard_size=self.shard_size)
         
+        print(f"[Protocol-Complete] Extracted {len(shards)} shards.")
+        
+        # Estimate keyword count
+        expected_elements = len(shards) * 20
         builder = TAHBuilder(target_fp=self.target_fp, expected_elements=expected_elements)
         
         for shard in shards:
-            # Auto-indexing will handle the keyword extraction
-            builder.add_shard(shard)
+            builder.add_text_shard(shard)
             
         output_path = f"cartridges/{cartridge_name}.tah"
         builder.save(output_path)

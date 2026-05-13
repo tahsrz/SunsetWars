@@ -73,8 +73,6 @@ def _city_hash64(data: bytes) -> int:
         else:
             return _hash_len_17_to_32(data, length)
     elif length <= 64:
-        # Check if length is sufficient for the offsets used
-        # CityHash reference handles 32-64 with specific logic
         if length >= 40:
             x = _fetch64(data, length - 40)
             y = (_fetch64(data, length - 16) ^ _fetch64(data, length - 24)) & MASK64
@@ -87,7 +85,6 @@ def _city_hash64(data: bytes) -> int:
         else:
             return _hash_len_17_to_32(data, length)
     
-    # For length > 64
     x = _fetch64(data, 0)
     y = (_fetch64(data, length - 16) ^ _fetch64(data, length - 32)) & MASK64
     z = _fetch64(data, length - 8)
@@ -119,18 +116,17 @@ def city_hash64(data: bytes, seed: int = None) -> int:
     if seed is None:
         return _city_hash64(data)
     else:
-        # CityHash64WithSeed implementation
         return _hash_len_16((_city_hash64(data) - K2) & MASK64, seed)
 
 def normalize(text: str) -> bytes:
-    """Normalizes string according to TAH standards."""
+    """Normalizes string according to Memoria Protocol standards."""
     return text.lower().strip().encode('utf-8')
 
-def get_tah_indices(text: str, m: int, k: int) -> list[int]:
-    """Generates k indices for a string using TAH double hashing."""
+def get_memoria_indices(text: str, m: int, k: int) -> list[int]:
+    """Generates k indices for a string using Memoria double hashing."""
     x = normalize(text)
     h1 = city_hash64(x)
-    h2 = city_hash64(x + b"TAH_SALT")
+    h2 = city_hash64(x + b"MEMORIA_SALT")
     
     indices = []
     for i in range(k):
@@ -138,7 +134,6 @@ def get_tah_indices(text: str, m: int, k: int) -> list[int]:
     return indices
 
 if __name__ == "__main__":
-    # Test cases
-    test_str = "  Texas Real Estate  "
-    indices = get_tah_indices(test_str, 10000, 3)
+    test_str = "  Memoria Protocol  "
+    indices = get_memoria_indices(test_str, 10000, 3)
     print(f"Indices for '{test_str}': {indices}")
