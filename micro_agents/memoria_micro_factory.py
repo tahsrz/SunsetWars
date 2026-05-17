@@ -24,26 +24,29 @@ if __name__ == "__main__": main()
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'builder'))
-from tah_query import TAHQuery
+from memoria_query import MemoriaQuery
 
-def check_gate(cartridge, term):
-    path = os.path.join('cartridges', f"{{cartridge}}.tah")
-    query = TAHQuery(path)
-    # Check Bloom Filter first
-    if query.bloom.check(term):
-        print(f"[GATE] '{{term}}' potentially present in {{cartridge}}.")
+def check_gate(vault_name, term):
+    path = os.path.join('cartridges', f"{vault_name}.hat")
+    query = MemoriaQuery(path)
+    # Check Global Bloom Filter first
+    if query.contains_keyword(term):
+        print(f"[MEMORIA-GATE] '{term}' potentially present in {vault_name}.")
         return True
-    print(f"[GATE] '{{term}}' definitely NOT in {{cartridge}}.")
+    print(f"[MEMORIA-GATE] '{term}' definitely NOT in {vault_name}.")
     return False
 
 if __name__ == "__main__":
-    check_gate(sys.argv[1], sys.argv[2])
+    if len(sys.argv) < 3:
+        print("Usage: python {name}.py <vault_name> <term>")
+    else:
+        check_gate(sys.argv[1], sys.argv[2])
 """
 }
 
 def main():
     if len(sys.argv) < 3:
-        print("Usage: python tah_micro_factory.py <template_type> <agent_name>")
+        print("Usage: python micro_agents/memoria_micro_factory.py <template_type> <agent_name>")
         print(f"Available templates: {', '.join(TEMPLATES.keys())}")
         return
 

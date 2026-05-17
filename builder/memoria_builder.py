@@ -122,7 +122,7 @@ class MemoriaBuilder:
         hat_path = f"{base_name}.hat"
         tah_path = f"{base_name}.tah"
         
-        magic_hat = 0x48415421 # 'HAT!'
+        magic_tah = 0x54414821 # 'TAH!'
         version = 0x0350
         shard_count = len(self.shard_entries)
         avg_complexity = self.total_word_count // shard_count if shard_count > 0 else 0
@@ -130,7 +130,7 @@ class MemoriaBuilder:
         # 1. Write the .HAT (Header Atlas)
         # Header (64 bytes): Magic, Version, k, m, ShardCount, AvgComp
         header = struct.pack('<I H B B Q I I', 
-                             magic_hat, version, self.k, 0, self.m, shard_count, avg_complexity)
+                             magic_tah, version, self.k, 0, self.m, shard_count, avg_complexity)
         header = header.ljust(64, b'\x00')
         
         with open(hat_path, 'wb') as f:

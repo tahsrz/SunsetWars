@@ -2,9 +2,9 @@ import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
 
-# Add builder to path for TAHQuery
+# Add builder to path for MemoriaQuery
 sys.path.append(os.path.dirname(__file__))
-from tah_query import TAHQuery
+from memoria_query import MemoriaQuery
 
 def pulse_search(query_terms):
     cartridge_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "cartridges")
@@ -12,24 +12,27 @@ def pulse_search(query_terms):
         print("Error: Cartridges directory not found.")
         return
 
-    cartridges = [f for f in os.listdir(cartridge_dir) if f.endswith('.tah')]
+    # Look for .hat files (Header Atlas) which are the entry points for Memoria Vaults
+    vaults = [f for f in os.listdir(cartridge_dir) if f.endswith('.hat')]
     
     results = []
     
-    def search_cartridge(filename):
+    def search_vault(filename):
         path = os.path.join(cartridge_dir, filename)
         try:
-            q = TAHQuery(path)
+            # MemoriaQuery handles the .hat/.tah pairing automatically
+            q = MemoriaQuery(path)
             # We use a lower threshold for agentic retrieval to ensure we don't miss nuanced info
             matches = q.get_matches(query_terms)
             q.close()
             return [(filename, m) for m in matches]
-        except:
+        except Exception as e:
+            # print(f"Error searching {filename}: {e}")
             return []
 
-    # Parallel search across all cartridges
+    # Parallel search across all vaults
     with ThreadPoolExecutor() as executor:
-        futures = [executor.submit(search_cartridge, c) for c in cartridges]
+        futures = [executor.submit(search_vault, v) for v in vaults]
         for future in futures:
             results.extend(future.result())
 

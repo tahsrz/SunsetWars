@@ -1,5 +1,5 @@
 import json
-from tah_builder import TAHBuilder
+from memoria_builder import MemoriaBuilder
 
 # Sample Medical Knowledge (Condensed for demonstration)
 medical_data = [
@@ -23,27 +23,24 @@ medical_data = [
         "keywords": ["Pneumonia", "Lungs", "Infection", "Alveoli", "Respiratory"],
         "content": "Pneumonia is an inflammatory condition of the lung primarily affecting the small air sacs known as alveoli. Symptoms typically include some combination of productive or dry cough, chest pain, fever and difficulty breathing. The severity of the condition is variable."
     }
-    # In a real scenario, this list would have 10,000+ entries
 ]
 
-def build_medical_encyclopedia():
+def build_medical_vault():
     # Estimating 10,000 keywords for a "complete" encyclopedia
-    # to ensure the Bloom filter is sized appropriately even if we only add a few shards now.
-    builder = TAHBuilder(target_fp=0.0001, expected_elements=10000)
+    builder = MemoriaBuilder(target_fp=0.0001, expected_elements=10000)
     
-    print("Building Medical Encyclopedia Cartridge...")
+    print("Compiling Medical Encyclopedia Vault...")
     
     for entry in medical_data:
-        builder.add_shard(entry["content"], entry["keywords"])
-        # Also index the topic name
-        builder._add_to_filter(entry["topic"])
+        # Index keywords for the shard
+        builder.add_text_shard(entry["content"])
         
-    # Simulate adding 500 more generic medical terms to the filter to test scalability
-    # (Just for sizing/FP test demonstration)
-    for i in range(500):
-        builder._add_to_filter(f"Term_{i}")
+        # Manually index topic and keywords in the global filter
+        builder._add_to_global_filter(entry["topic"])
+        for kw in entry["keywords"]:
+            builder._add_to_global_filter(kw)
         
-    builder.save("cartridges/medical_encyclopedia.tah")
+    builder.save("cartridges/medical_encyclopedia")
 
 if __name__ == "__main__":
-    build_medical_encyclopedia()
+    build_medical_vault()

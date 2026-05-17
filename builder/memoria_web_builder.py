@@ -1,12 +1,12 @@
 import requests
 from bs4 import BeautifulSoup
-from tah_builder import TAHBuilder, OzrielSegmenter
+from memoria_builder import MemoriaBuilder, OzrielSegmenter
 import re
 import os
 
 class WebIngestor:
     """
-    TAH Web Ingestor v3.0 (Ozriel Protocol)
+    Memoria Web Ingestor v3.1 (Ozriel Protocol)
     Implements recursive semantic discovery and v3 polymorphic storage.
     """
     def __init__(self, target_fp=0.0001, shard_size=1200, max_depth=2):
@@ -15,7 +15,7 @@ class WebIngestor:
         self.max_depth = max_depth
         self.visited_urls = set()
         self.headers = {
-            'User-Agent': 'TAH-Ozriel/3.0 (Terminal AI Hub; Protocol-V3)'
+            'User-Agent': 'Memoria-Ozriel/3.1 (Terminal AI Hub; Protocol-V3)'
         }
 
     def _vitality_check(self, element):
@@ -68,8 +68,8 @@ class WebIngestor:
             print(f"[Protocol-Error] Node failure at {url}: {e}")
             return []
 
-    def build_cartridge(self, url, cartridge_name):
-        print(f"[Initiating Protocol v3.0] Target: {url}")
+    def build_vault(self, url, vault_name):
+        print(f"[Initiating Protocol v3.1] Target: {url}")
         semantic_nodes = self.fetch_semantic_nodes(url)
         
         if not semantic_nodes:
@@ -81,21 +81,21 @@ class WebIngestor:
         
         print(f"[Protocol-Complete] Extracted {len(shards)} shards.")
         
-        builder = TAHBuilder(target_fp=self.target_fp, expected_elements=len(shards) * 30)
+        builder = MemoriaBuilder(target_fp=self.target_fp, expected_elements=len(shards) * 30)
         for shard in shards:
             builder.add_text_shard(shard)
             
-        output_path = f"cartridges/{cartridge_name}.tah"
-        builder.save(output_path)
-        return output_path
+        output_base = f"cartridges/{vault_name}"
+        builder.save(output_base)
+        return output_base
 
 if __name__ == "__main__":
     import sys
     if len(sys.argv) < 2:
-        print("Usage: python builder/web_builder.py <url> [cartridge_name]")
+        print("Usage: python builder/memoria_web_builder.py <url> [vault_name]")
         sys.exit(1)
         
     url = sys.argv[1]
-    name = sys.argv[2] if len(sys.argv) > 2 else "ozriel_resource"
+    vault_name = sys.argv[2] if len(sys.argv) > 2 else "ozriel_resource"
     ingestor = WebIngestor(max_depth=1)
-    ingestor.build_cartridge(url, name)
+    ingestor.build_vault(url, vault_name)

@@ -2,11 +2,11 @@ import sys
 import os
 import time
 
-# Add the builder directory to path to import TAHBuilder
+# Add the builder directory to path to import MemoriaBuilder
 sys.path.append(os.path.dirname(__file__))
-from tah_builder import TAHBuilder
+from memoria_builder import MemoriaBuilder
 
-def forge_from_file(source_file, output_cartridge):
+def forge_from_file(source_file, output_base):
     if not os.path.exists(source_file):
         print(f"[Error] Source file not found: {source_file}")
         return False
@@ -19,14 +19,14 @@ def forge_from_file(source_file, output_cartridge):
         return False
 
     # Initialize builder based on memory density
-    builder = TAHBuilder(target_fp=0.001, expected_elements=max(100, len(lines) * 2))
+    builder = MemoriaBuilder(target_fp=0.0001, expected_elements=max(200, len(lines) * 5))
     
-    print(f"[Forge] Syncing {len(lines)} memories from {os.path.basename(source_file)}...")
+    print(f"[Memoria-Forge] Syncing {len(lines)} memories from {os.path.basename(source_file)}...")
     for memory in lines:
-        builder.add_shard(memory, type_tag=TAHBuilder.TYPE_TEXT)
+        builder.add_text_shard(memory)
         
-    builder.save(output_cartridge)
-    print(f"[Forge] Sync complete: {output_cartridge}")
+    builder.save(output_base)
+    print(f"[Memoria-Forge] Sync complete: {output_base}")
     return True
 
 if __name__ == "__main__":
@@ -34,13 +34,13 @@ if __name__ == "__main__":
     base_dir = os.path.dirname(os.path.dirname(__file__))
     source_path = os.path.join(base_dir, "user_memories.txt")
     cartridge_dir = os.path.join(base_dir, "cartridges")
-    output_path = os.path.join(cartridge_dir, "user_memories.tah")
+    output_base = os.path.join(cartridge_dir, "user_memories")
 
     if not os.path.exists(cartridge_dir):
         os.makedirs(cartridge_dir)
 
     # Initial Sync
-    forge_from_file(source_path, output_path)
+    forge_from_file(source_path, output_base)
 
     # Watch Mode (Simple polling for automation)
     if "--watch" in sys.argv:
@@ -52,7 +52,7 @@ if __name__ == "__main__":
                 current_mtime = os.path.getmtime(source_path)
                 if current_mtime > last_mtime:
                     print("[Watcher] Change detected.")
-                    if forge_from_file(source_path, output_path):
+                    if forge_from_file(source_path, output_base):
                         last_mtime = current_mtime
         except KeyboardInterrupt:
             print("[Watcher] Stopped.")

@@ -2,14 +2,14 @@ import os
 import subprocess
 import whisper
 import re
-from tah_builder import TAHBuilder
+from memoria_builder import MemoriaBuilder, OzrielSegmenter
 
 class YouTubeIngestor:
     """
-    TAH YouTube Ingestor (v1.0)
-    Transforms video audio into privacy-centric specialized knowledge cartridges.
+    Memoria YouTube Ingestor (v3.1)
+    Transforms video audio into privacy-centric specialized knowledge vaults.
     """
-    def __init__(self, model_size="base", target_fp=0.0001, shard_size=1000):
+    def __init__(self, model_size="base", target_fp=0.0001, shard_size=1200):
         self.model_size = model_size
         self.target_fp = target_fp
         self.shard_size = shard_size
@@ -48,9 +48,9 @@ class YouTubeIngestor:
         result = self.model.transcribe(audio_path)
         return result['text']
 
-    def build_cartridge(self, url, cartridge_name):
-        """Pipeline: Download -> Transcribe -> TAH Build."""
-        temp_audio = f"temp_{cartridge_name}"
+    def build_vault(self, url, vault_name):
+        """Pipeline: Download -> Transcribe -> Memoria Build."""
+        temp_audio = f"temp_{vault_name}"
         audio_path = self.download_audio(url, temp_audio)
         
         if not audio_path:
@@ -59,50 +59,35 @@ class YouTubeIngestor:
         try:
             transcript = self.transcribe_audio(audio_path)
             
-            # Clean transcript and chunk
-            transcript = re.sub(r'\s+', ' ', transcript).strip()
-            shards = self._chunk_text(transcript)
+            # Use Ozriel semantic segmentation
+            shards = OzrielSegmenter.segment(transcript, max_shard_size=self.shard_size)
             
-            print(f"[TAH] Generating cartridge from {len(shards)} transcript shards...")
+            print(f"[Memoria] Generating vault from {len(shards)} transcript shards...")
             
             expected_elements = len(shards) * 20
-            builder = TAHBuilder(target_fp=self.target_fp, expected_elements=expected_elements)
+            builder = MemoriaBuilder(target_fp=self.target_fp, expected_elements=expected_elements)
             
             for shard in shards:
-                builder.add_shard(shard)
+                builder.add_text_shard(shard)
             
-            output_path = f"cartridges/{cartridge_name}.tah"
-            builder.save(output_path)
+            output_base = f"cartridges/{vault_name}"
+            builder.save(output_base)
             
-            return output_path
+            return output_base
         finally:
             # Cleanup temporary audio files
             if os.path.exists(audio_path):
                 os.remove(audio_path)
 
-    def _chunk_text(self, text):
-        """Segments transcript into tactical shards."""
-        shards = []
-        start = 0
-        while start < len(text):
-            end = start + self.shard_size
-            if end < len(text):
-                boundary = text.rfind('.', start, end + 200)
-                if boundary != -1 and boundary > start:
-                    end = boundary + 1
-            shards.append(text[start:end].strip())
-            start = end
-        return shards
-
 if __name__ == "__main__":
     import sys
     if len(sys.argv) < 2:
-        print("TAH YouTube Ingestor v1.0")
-        print("Usage: python builder/youtube_ingestor.py <url> [cartridge_name]")
+        print("Memoria YouTube Ingestor v3.1")
+        print("Usage: python builder/memoria_youtube_ingestor.py <url> [vault_name]")
         sys.exit(1)
         
     url = sys.argv[1]
-    name = sys.argv[2] if len(sys.argv) > 2 else "youtube_expert"
+    vault_name = sys.argv[2] if len(sys.argv) > 2 else "youtube_expert"
     
     ingestor = YouTubeIngestor(model_size="base")
-    ingestor.build_cartridge(url, name)
+    ingestor.build_vault(url, vault_name)

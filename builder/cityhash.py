@@ -126,7 +126,7 @@ def get_memoria_indices(text: str, m: int, k: int) -> list[int]:
     """Generates k indices for a string using Memoria double hashing."""
     x = normalize(text)
     h1 = city_hash64(x)
-    h2 = city_hash64(x + b"MEMORIA_SALT")
+    h2 = city_hash64(x + b"TAH_SALT")
     
     indices = []
     for i in range(k):

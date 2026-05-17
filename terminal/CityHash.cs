@@ -9,6 +9,7 @@ namespace TAH.Terminal
         private const ulong K1 = 0xb492b66fbe98f273;
         private const ulong K2 = 0x9ae16a3b2f90404f;
         private const ulong K3 = 0xc949d7c7509e6557;
+        private const ulong KMUL = 0x9ddfea08eb382d69;
 
         private static ulong Rotate(ulong val, int shift)
         {
@@ -20,8 +21,6 @@ namespace TAH.Terminal
             return val ^ (val >> 47);
         }
 
-        private const ulong KMUL = 0x9ddfea08eb382d69;
-
         private static ulong HashLen16(ulong u, ulong v)
         {
             ulong a = (u ^ v) * KMUL;
@@ -30,6 +29,30 @@ namespace TAH.Terminal
             b ^= b >> 47;
             b *= KMUL;
             return b;
+        }
+
+        private static ulong WeakHashLen32WithSeeds(ulong w, ulong x, ulong y, ulong z, ulong a, ulong b)
+        {
+            a += w;
+            b = Rotate(b + a + z, 21);
+            ulong c = a;
+            a += x;
+            a += y;
+            b += Rotate(a, 44);
+            return HashLen16(a + z, b + c); // Note: Original CityHash returns a pair, but we can combine or return as needed.
+                                             // In standard CityHash, v and w are pairs of ulongs.
+        }
+        
+        // Proper pair-based WeakHash for parity
+        private static (ulong, ulong) WeakHashLen32WithSeedsPair(ulong w, ulong x, ulong y, ulong z, ulong a, ulong b)
+        {
+            a += w;
+            b = Rotate(b + a + z, 21);
+            ulong c = a;
+            a += x;
+            a += y;
+            b += Rotate(a, 44);
+            return (a + z, b + c);
         }
 
         private static ulong Fetch64(byte[] data, int offset)
@@ -79,73 +102,63 @@ namespace TAH.Terminal
 
         public static ulong CityHash64(byte[] data)
         {
-            int length = data.Length;
-            if (length <= 32)
+            int len = data.Length;
+            if (len <= 32)
             {
-                if (length <= 16) return HashLen0to16(data, length);
-                return HashLen17to32(data, length);
+                if (len <= 16) return HashLen0to16(data, len);
+                return HashLen17to32(data, len);
             }
             
-            // Simplified for brevity, but including the >32 logic is better
-            // Fallback to HashLen17to32 for small cases, but we need full >64 for consistency
-            // I will implement the full logic to ensure parity.
-            
-            if (length <= 64)
+            if (len <= 64)
             {
-                ulong x = Fetch64(data, length - 40);
-                ulong y = Fetch64(data, length - 16) ^ Fetch64(data, length - 24);
-                ulong z = Fetch64(data, length - 8);
-                ulong v0 = Rotate(y, 33) * K1;
-                ulong v1 = Rotate(y + x, 33) * K1;
-                ulong w0 = Rotate(z + v0, 35) * K1 + v1;
-                ulong w1 = Rotate(x + y, 33) * K1;
-                return HashLen16(v0 + v1, w0 + w1);
+                if (len >= 40)
+                {
+                    ulong x1 = Fetch64(data, len - 40);
+                    ulong y1 = Fetch64(data, len - 16) ^ Fetch64(data, len - 24);
+                    ulong z1 = Fetch64(data, len - 8);
+                    ulong v0 = Rotate(y1, 33) * K1;
+                    ulong v1 = Rotate(y1 + x1, 33) * K1;
+                    ulong w0 = Rotate(z1 + v0, 35) * K1 + v1;
+                    ulong w1 = Rotate(x1 + y1, 33) * K1;
+                    return HashLen16(v0 + v1, w0 + w1);
+                }
+                else
+                {
+                    return HashLen17to32(data, len);
+                }
             }
 
             // > 64 logic
-            ulong x2 = Fetch64(data, 0);
-            ulong y2 = Fetch64(data, length - 16) ^ Fetch64(data, length - 32);
-            ulong z2 = Fetch64(data, length - 8);
-            ulong v0_2 = Rotate(y2, 33) * K1;
-            ulong v1_2 = Rotate(y2 + x2, 33) * K1;
-            ulong w0_2 = Rotate(z2 + v0_2, 35) * K1 + v1_2;
-            ulong w1_2 = Rotate(x2 + y2, 33) * K1;
-            x2 = Rotate(x2 + y2, 42) * K1;
+            ulong x = Fetch64(data, 0);
+            ulong y = Fetch64(data, len - 16) ^ Fetch64(data, len - 32);
+            ulong z = Fetch64(data, len - 8);
+            ulong v0_2 = Rotate(y, 33) * K1;
+            ulong v1_2 = Rotate(y + x, 33) * K1;
+            ulong w0_2 = Rotate(z + v0_2, 35) * K1 + v1_2;
+            ulong w1_2 = Rotate(x + y, 33) * K1;
+            x = Rotate(x + y, 42) * K1;
 
             int offset = 0;
-            while (length - offset > 64)
+            while (len - offset > 64)
             {
-                x2 = Rotate(x2 + y2 + v0_2 + Fetch64(data, offset + 8), 37) * K1;
-                y2 = Rotate(y2 + v1_2 + Fetch64(data, offset + 48), 42) * K1;
-                x2 ^= w1_2;
-                y2 += v0_2 + Fetch64(data, offset + 40);
-                z2 = Rotate(z2 + w0_2, 33) * K1;
+                x = Rotate(x + y + v0_2 + Fetch64(data, offset + 8), 37) * K1;
+                y = Rotate(y + v1_2 + Fetch64(data, offset + 48), 42) * K1;
+                x ^= w1_2;
+                y += v0_2 + Fetch64(data, offset + 40);
+                z = Rotate(z + w0_2, 33) * K1;
                 
-                // WeakHashLen32WithSeeds
-                ulong cur_a = v0_2 + Fetch64(data, offset);
-                ulong cur_b = Rotate(v1_2 + cur_a + Fetch64(data, offset + 32), 21);
-                ulong cur_c = cur_a;
-                cur_a += Fetch64(data, offset + 16);
-                cur_a += Fetch64(data, offset + 24);
-                cur_b += Rotate(cur_a, 44);
-                v0_2 = cur_a + Fetch64(data, offset + 32);
-                v1_2 = cur_b + cur_c;
+                var v = WeakHashLen32WithSeedsPair(Fetch64(data, offset), Fetch64(data, offset + 16), Fetch64(data, offset + 24), Fetch64(data, offset + 32), v0_2, v1_2);
+                v0_2 = v.Item1; v1_2 = v.Item2;
+                
+                var w = WeakHashLen32WithSeedsPair(Fetch64(data, offset + 32), Fetch64(data, offset + 40), Fetch64(data, offset + 48), Fetch64(data, offset + 56), w0_2, w1_2);
+                w0_2 = w.Item1; w1_2 = w.Item2;
 
-                ulong cur_a2 = w0_2 + Fetch64(data, offset + 32);
-                ulong cur_b2 = Rotate(w1_2 + cur_a2 + Fetch64(data, offset + 56), 21);
-                ulong cur_c2 = cur_a2;
-                cur_a2 += Fetch64(data, offset + 40);
-                cur_a2 += Fetch64(data, offset + 48);
-                cur_b2 += Rotate(cur_a2, 44);
-                w0_2 = cur_a2 + Fetch64(data, offset + 56);
-                w1_2 = cur_b2 + cur_c2;
-
-                ulong tmp = x2; x2 = z2; z2 = tmp;
+                ulong tmp = x; x = z; z = tmp;
                 offset += 64;
             }
 
-            return HashLen16(HashLen16(v0_2, v1_2) + ShiftMix(y2) * K1 + z2,
-                             HashLen16(w0_2, w1_2) + x2);
+            return HashLen16(HashLen16(v0_2, v1_2) + ShiftMix(y) * K1 + z,
+                             HashLen16(w0_2, w1_2) + x);
         }
 
         public static ulong CityHash64WithSeed(byte[] data, ulong seed)
@@ -161,8 +174,8 @@ namespace TAH.Terminal
             // h2 using TAH_SALT
             byte[] salt = Encoding.UTF8.GetBytes("TAH_SALT");
             byte[] combined = new byte[x.Length + salt.Length];
-            Buffer.BlockCopy(x, 0, combined, 0, x.Length);
-            Buffer.BlockCopy(salt, 0, combined, x.Length, salt.Length);
+            System.Buffer.BlockCopy(x, 0, combined, 0, x.Length);
+            System.Buffer.BlockCopy(salt, 0, combined, x.Length, salt.Length);
             ulong h2 = CityHash64(combined);
 
             ulong[] indices = new ulong[k];

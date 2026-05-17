@@ -1,0 +1,4 @@
+https://nextjs.org/docs
+https://www.postgresql.org/docs/current/index.html
+https://supabase.com/docs
+https://react.dev/reference/react
