@@ -69,6 +69,36 @@ Located in `/workbench`. A "Set and Forget" intelligence pipeline.
 
 ---
 
+## 🌌 The Universal Ingestion Swarm (A-Z)
+The "Digital Universe" ingestion engine designed to systematically swallow the entire library of human knowledge without the noise.
+
+### 1. `wikipedia_universal_indexer.py`
+Located in `/builder`. A massive-scale alphabetical indexer that traverses the entire Wikipedia library from A to Z. 
+*   **Ozriel Protocol**: Every article is audited for technical density. Stubs and disambiguation pages are discarded.
+*   **Stateful Progress**: Tracks its position in `alphabetical_progress.json`. It will never index the same page twice.
+*   **Batch Compilation**: Automatically compiles articles into binary `.tah` cartridges in `cartridges/universe/`.
+
+### 2. `orchestrator.py` (The Hub)
+The central brain of the `knowledge_hub/`. 
+*   **Seed Monitoring**: Scans `knowledge_hub/seeds` for new `url_*.txt` or `.pdf` files.
+*   **Auto-Forge**: Triggers the appropriate builder (Web, PDF, or Wiki) and moves processed seeds to `knowledge_hub/processed`.
+
+### 🛠️ Recovery & Restart Instructions
+If the system is turned off or the swarm stalls, use these commands to resume the ingestion:
+
+**To Start the Orchestrator (Hub):**
+```powershell
+python orchestrator.py
+```
+
+**To Resume the A-Z Wikipedia Swarm:**
+```powershell
+python builder/wikipedia_universal_indexer.py
+```
+*Note: The swarm will automatically detect your progress from `alphabetical_progress.json` and pick up exactly where it left off.*
+
+---
+
 ## 📚 The Tactical Library: Domain Index
 The following expertise cartridges are currently active and optimized for surgical retrieval.
 
@@ -101,6 +131,31 @@ A collection of "Little Things" built on the TAH engine for specialized tasks.
 -   **`pulse_clip.py`:** Clipboard monitor that pulses the library for copied technical terms.
 -   **`voiceover_gen.py`:** Generates high-impact video scripts from technical ground truth.
 -   **`tah_micro_factory.py`:** Meta-tool to generate new specialized micro-agents.
+
+---
+
+## 🧠 For Contributors: Understanding the Architecture
+If you are new to the project, here is the plain-English explanation of how our intelligence files work. We don't use databases; we use **Knowledge Cartridges**. Every cartridge consists of two files that work together.
+
+### 1. The `.hat` (The Map / Header Atlas)
+**Think of this as a "Library Card Catalog" or a "Cheat Sheet."**
+*   **What it does**: It tells the AI if a piece of information exists *before* it starts looking for it. 
+*   **The Secret Weapon (Bloom Filter)**: Inside every `.hat` is a tiny "switchboard" of bits. When we add a word (like "Dallas") to a cartridge, we flip a specific set of switches to **ON**. 
+*   **How it works**: When you ask a question, Jamie checks the `.hat` file first. If the switches for your words are **OFF**, Jamie knows the answer is NOT in this cartridge and moves on instantly. This is why he can search millions of articles in a split second—he doesn't read the text; he just checks the switches.
+*   **The Index**: If the switches are **ON**, the `.hat` file provides a "GPS coordinate" (a byte-offset) to the exact location of the answer in the big data file.
+
+### 2. The `.tah` (The Warehouse / Tactical Data)
+**Think of this as the "Library Stacks" or the "Big Book of Facts."**
+*   **What it does**: This file contains the actual raw text (the Wikipedia articles, the code, the documentation). 
+*   **How it works**: It is organized into **"Shards"** (small, logical chunks of information). Because the `.hat` file gave us the exact "GPS coordinate," we don't have to read the `.tah` file from the beginning. We "teleport" (seek) directly to the answer, grab just that one shard, and hand it to the AI.
+
+### 🚀 Why do we do this?
+1.  **Speed**: It is thousands of times faster than searching a traditional database.
+2.  **Zero-Noise**: The AI only ever sees the *exact* information it needs. It doesn't get distracted by the surrounding "noise" of a long document.
+3.  **Cost**: Because we only send the "Surgical Match" to the AI (like OpenAI or Gemini), we save 90% on "token costs." 
+
+### 🐝 The Swarm Logic
+When we "download the universe," we create hundreds of these small `.hat` / `.tah` pairs. Jamie's brain searches all of them at once. It's like having a thousand specialized experts in a room, and only the one who knows the answer speaks up.
 
 ---
 
