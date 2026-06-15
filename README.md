@@ -1,6 +1,5 @@
 # TAH (Tactical Atlas & Heuristics) - v3.6 [Master Grid]
 
-**"Intelligence-Aware Surgical Retrieval for high-stakes Decision Systems"**
 
 
 TAH is a high-performance AI Gateway. It enables LLMs to gain instant domain expertise via local **Knowledge Cartridges (.tah)**, bypassing the latency of vector databases and the brute force token tax of massive context windows. By utilizing probabilistic data structures, binary analytic metadata, and surgical byte-offset seeking, TAH finds the "Knowledge Bullseye" in sub-milliseconds.
@@ -8,7 +7,7 @@ TAH is a high-performance AI Gateway. It enables LLMs to gain instant domain exp
 
 **The v3.6 Master Vault (`pulse_master_v3_6.hat`) links 24 core intelligence units across a global visual grid.**
 
----By moving away from traditional "Exact Matching" (SQL) and "Semantic Guessing" (Vector DBs), we at the Sunset Collective have established the **v3.6 Analytic Handshake**: A protocol that encodes Information Density, Provenance, and Geographic Origin directly into the binary layer.
+---By moving away from traditional "Exact Matching" (SQL) and "Semantic Guessing" (Vector DBs), we at the Sunset Collective have established a protocol that encodes Information Density and Geographic Origin directly into the binary layer.
 
 
 ## 🏗️ New in v3.6: The Intelligence Protocol
@@ -16,7 +15,6 @@ TAH is a high-performance AI Gateway. It enables LLMs to gain instant domain exp
 - **Provenance Linking**: Integrated **Source Registry** (JSON) mapping shards to real-world URLs and Ingestion Timestamps.
 - **Global Grid Mapping**: Shards are pinned to **RegionIDs** (e.g., Texas, California, Japan, Germany) for O(1) 3D visualization.
 - **Surgical Sentiment**: Initial support for sentiment-weighted retrieval (Positive/Negative/Neutral).
-- **BM25 Dynamic Ranking**: Intelligence-weighted scoring that prioritizes high-density, high-relevance shards.
 
 
 ## 🏗️ Technical Architecture: The v3.6 Binary Spec (80 Bytes)
