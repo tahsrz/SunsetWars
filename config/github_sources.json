@@ -14,5 +14,6 @@
     }
   ],
   "auto_sync": true,
-  "sync_interval_minutes": 60
+  "sync_interval_minutes": 60,
+  "idle_threshold_minutes": 15
 }

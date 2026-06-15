@@ -1,0 +1,150 @@
+{
+  "name": "segmented_expert_atlas",
+  "format": "segmented-expert-atlas-v1",
+  "generatedAt": "2026-06-15T19:20:58Z",
+  "expertCount": 400,
+  "segmentCount": 25,
+  "maxExperts": 400,
+  "sources": [
+    {
+      "name": "algorithms.tah",
+      "experts": 20
+    },
+    {
+      "name": "architecture.tah",
+      "experts": 20
+    },
+    {
+      "name": "cPlus.tah",
+      "experts": 20
+    },
+    {
+      "name": "categoryTheory.tah",
+      "experts": 20
+    },
+    {
+      "name": "compilers.tah",
+      "experts": 20
+    },
+    {
+      "name": "dallas_community_intel.tah",
+      "experts": 20
+    },
+    {
+      "name": "dallas_safety_intel.tah",
+      "experts": 20
+    },
+    {
+      "name": "dataDesign.tah",
+      "experts": 20
+    },
+    {
+      "name": "deepLearning.tah",
+      "experts": 20
+    },
+    {
+      "name": "medical_encyclopedia.tah",
+      "experts": 1
+    },
+    {
+      "name": "operatingSystem.tah",
+      "experts": 20
+    },
+    {
+      "name": "operatingSystem_concept.tah",
+      "experts": 1
+    },
+    {
+      "name": "operatingSystem_links.tah",
+      "experts": 20
+    },
+    {
+      "name": "operatingSystem_recursive.tah",
+      "experts": 1
+    },
+    {
+      "name": "operatingSystem_vital.tah",
+      "experts": 1
+    },
+    {
+      "name": "polymorphic_test.tah",
+      "experts": 1
+    },
+    {
+      "name": "pulse_master_v3_6.tah",
+      "experts": 20
+    },
+    {
+      "name": "python_core.tah",
+      "experts": 2
+    },
+    {
+      "name": "re_rasterizer.tah",
+      "experts": 20
+    },
+    {
+      "name": "sicp.tah",
+      "experts": 19
+    },
+    {
+      "name": "sicp_expert.tah",
+      "experts": 1
+    },
+    {
+      "name": "sunset_pulse.tah",
+      "experts": 19
+    },
+    {
+      "name": "sunset_pulse_expertise.tah",
+      "experts": 1
+    },
+    {
+      "name": "sunset_wars.tah",
+      "experts": 19
+    },
+    {
+      "name": "sunset_wars_runtime_matrix.tah",
+      "experts": 12
+    },
+    {
+      "name": "tarrant_deeds.tah",
+      "experts": 1
+    },
+    {
+      "name": "texas_real_estate.tah",
+      "experts": 1
+    },
+    {
+      "name": "theLittleSchemer.tah",
+      "experts": 19
+    },
+    {
+      "name": "unixArt.tah",
+      "experts": 19
+    },
+    {
+      "name": "user_memories.tah",
+      "experts": 1
+    },
+    {
+      "name": "user_memories.unified.tah",
+      "experts": 2
+    },
+    {
+      "name": "web_1779229372.tah",
+      "experts": 6
+    },
+    {
+      "name": "web_1779229377.tah",
+      "experts": 1
+    },
+    {
+      "name": "web_1779229378.tah",
+      "experts": 6
+    },
+    {
+      "name": "web_1779229382.tah",
+      "experts": 6
+    }
+  ]
+}

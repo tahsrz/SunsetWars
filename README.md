@@ -16,6 +16,22 @@ TAH is a high-performance AI Gateway. It enables LLMs to gain instant domain exp
 - **Global Grid Mapping**: Shards are pinned to **RegionIDs** (e.g., Texas, California, Japan, Germany) for O(1) 3D visualization.
 - **Surgical Sentiment**: Initial support for sentiment-weighted retrieval (Positive/Negative/Neutral).
 
+## Semantic Expert Atlas
+`builder/segmented_expert_atlas.py` compiles the cartridge library into a 400-shard expert population at `cartridges/expert_atlas/segmented_expert_atlas.*`.
+
+- **Concept anchored segmentation**: each source shard is split around extracted concept anchors; those anchors drive the segment vitality score.
+- **Precomputed density complexity**: each expert stores semantic density as its complexity score, so routing and ranking can reject low-fit regions without reading payload text.
+- **Recursive binary concept links**: each expert links to nearby binary jumps plus strongest same-concept peers, giving fast traversal between related shards after the first hit.
+- **Middle-out disqualification**: query starts with a binary route through segment key ranges, then rejects whole segments by domain union, segment Bloom, complexity range, and vitality metadata before `.tah` payload reads.
+
+Run the Ollama-to-Codex bridge when a query should become an agent handoff:
+
+```powershell
+python builder/ollama_codex_bridge.py "cache memory architecture retrieval routing"
+```
+
+The bridge asks Ollama to normalize the query into retrieval tokens when the local daemon is available, searches the expert atlas plus every selected cartridge, writes `workbench/codex_handoffs/latest.md`, and invokes `codex exec` with the retrieved TAH context. Use `--no-codex` to generate the handoff without launching Codex.
+
 
 ## 🏗️ Technical Architecture: The v3.6 Binary Spec (80 Bytes)
 The Memoria Protocol utilizes a dual-file "Atlas Handshake" to achieve O(1) surgical retrieval:

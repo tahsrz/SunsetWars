@@ -174,7 +174,9 @@ class MemoriaQuery:
                     "source": source["url"],
                     "location": source.get("location", "USA"),
                     "score": scores[idx],
-                    "links": links
+                    "links": links,
+                    "offset": offset,
+                    "length": length,
                 })
         return results
 
