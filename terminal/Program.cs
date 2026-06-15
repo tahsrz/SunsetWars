@@ -9,10 +9,13 @@ namespace TAH.Terminal
     public struct ShardIndexEntry
     {
         public byte TypeTag;
+        public ushort LinkCount;
+        public uint LinkOffset;
         public ulong Offset;
         public uint Length;
-        public uint Meta; // WordCount (Text), Z-Order (Coord)
-        public byte[] SpecializedIndex; // 56 bytes
+        public ushort SourceID;
+        public ushort RegionID;
+        public byte[] Analytics; // 56 bytes
     }
 
     public struct SearchResult
@@ -21,6 +24,7 @@ namespace TAH.Terminal
         public int ShardIndex;
         public double Score;
         public string Text;
+        public List<int> Links;
     }
 
     public class Cartridge : IDisposable
@@ -33,8 +37,15 @@ namespace TAH.Terminal
         public ulong M { get; private set; }
         public uint ShardCount { get; private set; }
         public uint AvgComplexity { get; private set; }
+        
+        public ulong RegistryOffset { get; private set; }
+        public uint RegistryLength { get; private set; }
+        public ulong LinksOffset { get; private set; }
+        public uint LinksLength { get; private set; }
+
         private byte[] _bloomFilter;
         private ShardIndexEntry[] _shardIndex;
+        private byte[] _linksData;
 
         public Cartridge(string filePath)
         {
@@ -56,6 +67,11 @@ namespace TAH.Terminal
             ShardCount = _reader.ReadUInt32();
             AvgComplexity = _reader.ReadUInt32();
 
+            RegistryOffset = _reader.ReadUInt64();
+            RegistryLength = _reader.ReadUInt32();
+            LinksOffset = _reader.ReadUInt64();
+            LinksLength = _reader.ReadUInt32();
+
             _stream.Seek(64, SeekOrigin.Begin);
 
             int bloomByteSize = (int)Math.Ceiling(M / 8.0);
@@ -65,12 +81,33 @@ namespace TAH.Terminal
             for (int i = 0; i < ShardCount; i++)
             {
                 _shardIndex[i].TypeTag = _reader.ReadByte();
-                _stream.Seek(7, SeekOrigin.Current); // Skip 7 padding bytes
+                _shardIndex[i].LinkCount = _reader.ReadUInt16();
+                _shardIndex[i].LinkOffset = _reader.ReadUInt32();
+                _stream.Seek(1, SeekOrigin.Current); // Skip 1 padding byte
+                
                 _shardIndex[i].Offset = _reader.ReadUInt64();
                 _shardIndex[i].Length = _reader.ReadUInt32();
-                _shardIndex[i].Meta = _reader.ReadUInt32();
-                _shardIndex[i].SpecializedIndex = _reader.ReadBytes(56);
+                _shardIndex[i].SourceID = _reader.ReadUInt16();
+                _shardIndex[i].RegionID = _reader.ReadUInt16();
+                _shardIndex[i].Analytics = _reader.ReadBytes(56);
             }
+
+            if (LinksLength > 0)
+            {
+                _stream.Seek((long)LinksOffset, SeekOrigin.Begin);
+                _linksData = _reader.ReadBytes((int)LinksLength);
+            }
+        }
+
+        public List<int> GetShardLinks(int index)
+        {
+            if (index < 0 || index >= ShardCount || _shardIndex[index].LinkCount == 0)
+                return new List<int>();
+
+            byte[] shardLinksData = new byte[LinksLength - _shardIndex[index].LinkOffset]; // Over-estimate
+            Array.Copy(_linksData, (int)_shardIndex[index].LinkOffset, shardLinksData, 0, shardLinksData.Length);
+            
+            return WebGraph.DecodeLinks(shardLinksData, index, _shardIndex[index].LinkCount);
         }
 
         public bool ContainsKeyword(string keyword)
@@ -124,14 +161,14 @@ namespace TAH.Terminal
                 bool match = true;
                 foreach (var idx in indices)
                 {
-                    if ((entry.SpecializedIndex[idx / 8] & (1 << (int)(idx % 8))) == 0) { match = false; break; }
+                    if ((entry.Analytics[idx / 8] & (1 << (int)(idx % 8))) == 0) { match = false; break; }
                 }
                 
                 if (match)
                 {
                     double idf = Math.Log((ShardCount + 0.5) / 1.5 + 1.0);
                     double tf = 1.0;
-                    double score = idf * (tf * 2.5) / (tf + 1.5 * (0.25 + 0.75 * (entry.Meta / (double)AvgComplexity)));
+                    double score = idf * (tf * 2.5) / (tf + 1.5 * (0.25 + 0.75 * (100 / (double)AvgComplexity))); // Defaulting meta to 100
                     if (term.Contains(" ")) score *= 3.0;
                     totalScore += score;
                 }
@@ -150,7 +187,7 @@ namespace TAH.Terminal
                 foreach (var idx in indices)
                 {
                     int byteIdx = (int)(idx / 8) + 8;
-                    if ((entry.SpecializedIndex[byteIdx] & (1 << (int)(idx % 8))) == 0) { match = false; break; }
+                    if ((entry.Analytics[byteIdx] & (1 << (int)(idx % 8))) == 0) { match = false; break; }
                 }
                 if (match) return 50.0;
             }
@@ -167,7 +204,7 @@ namespace TAH.Terminal
                 foreach (var idx in indices)
                 {
                     int byteIdx = (int)(idx / 8) + 8;
-                    if ((entry.SpecializedIndex[byteIdx] & (1 << (int)(idx % 8))) == 0) { match = false; break; }
+                    if ((entry.Analytics[byteIdx] & (1 << (int)(idx % 8))) == 0) { match = false; break; }
                 }
                 if (match) return 50.0;
             }
@@ -187,40 +224,20 @@ namespace TAH.Terminal
                 
                 string text = Encoding.UTF8.GetString(data, 0, textLen);
                 
-                // Binary Links Block Validation (v3.0+)
-                // Must have at least 5 bytes after null terminator: [0] [Int32 linkCount]
-                if (textLen < data.Length - 5)
+                // WebGraph Links (v3.6+)
+                var links = GetShardLinks(index);
+                if (links.Count > 0)
                 {
-                    try {
-                        int linkCount = BitConverter.ToInt32(data, textLen + 1);
-                        // Sanity check: linkCount should be reasonable (e.g. < 100)
-                        if (linkCount > 0 && linkCount < 100)
-                        {
-                            StringBuilder sb = new StringBuilder(text);
-                            sb.Append("\n\n[SEE ALSO]");
-                            int validLinks = 0;
-                            for (int i = 0; i < linkCount; i++)
-                            {
-                                int offsetIdx = textLen + 5 + (i * 8);
-                                if (offsetIdx + 8 <= data.Length)
-                                {
-                                    ulong targetOffset = BitConverter.ToUInt64(data, offsetIdx);
-                                    // Validate offset is within file bounds
-                                    if (targetOffset > 64 && targetOffset < (ulong)_stream.Length)
-                                    {
-                                        string title = GetPreviewAtOffset(targetOffset);
-                                        if (!string.IsNullOrEmpty(title))
-                                        {
-                                            sb.Append(string.Format("\n-> {0} (@{1})", title, targetOffset));
-                                            validLinks++;
-                                        }
-                                    }
-                                }
-                            }
-                            if (validLinks > 0) text = sb.ToString();
-                        }
-                    } catch { /* Ignore malformed link blocks in older cartridges */ }
+                    StringBuilder sb = new StringBuilder(text);
+                    sb.Append("\n\n[SEE ALSO]");
+                    foreach (int linkIdx in links)
+                    {
+                        sb.Append(string.Format("\n-> Shard {0}", linkIdx));
+                        // In a real implementation, we could resolve the title of the linked shard
+                    }
+                    text = sb.ToString();
                 }
+                
                 return text;
             }
         }
