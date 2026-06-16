@@ -1,0 +1,33 @@
+{
+  "feature": "Best improvements for indexing",
+  "createdAt": "2026-06-15T15:29:14-0500",
+  "experimentPath": "C:\\Users\\Taz\\SunsetWars\\workbench\\feature_experiments\\20260615-152910-best-improvements-for-indexing",
+  "retrievalMs": 3993.01,
+  "tokens": [
+    "best",
+    "improvements",
+    "indexing"
+  ],
+  "concepts": [
+    "search optimization",
+    "data retrieval enhancement",
+    "information organization improvement"
+  ],
+  "ollamaModel": "phi4-mini:latest",
+  "fallbackReason": null,
+  "sources": [
+    "sunset_wars.tah",
+    "sunset_wars_runtime_matrix.tah",
+    "deepLearning.tah",
+    "algorithms.tah",
+    "dataDesign.tah"
+  ],
+  "atlasResults": 4,
+  "shardResults": 20,
+  "files": {
+    "baselinePrompt": "C:\\Users\\Taz\\SunsetWars\\workbench\\feature_experiments\\20260615-152910-best-improvements-for-indexing\\baseline_prompt.md",
+    "tahPrompt": "C:\\Users\\Taz\\SunsetWars\\workbench\\feature_experiments\\20260615-152910-best-improvements-for-indexing\\tah_prompt.md",
+    "comparison": "C:\\Users\\Taz\\SunsetWars\\workbench\\feature_experiments\\20260615-152910-best-improvements-for-indexing\\comparison.md"
+  },
+  "totalMs": 3996.58
+}

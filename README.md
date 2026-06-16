@@ -32,6 +32,16 @@ python builder/ollama_codex_bridge.py "cache memory architecture retrieval routi
 
 The bridge asks Ollama to normalize the query into retrieval tokens when the local daemon is available, searches the expert atlas plus every selected cartridge, writes `workbench/codex_handoffs/latest.md`, and invokes `codex exec` with the retrieved TAH context. Use `--no-codex` to generate the handoff without launching Codex.
 
+The generated handoff is prompt-cache friendly for OpenAI API usage: stable instructions and retrieved context are placed before volatile fields such as the exact user query, scores, offsets, and route diagnostics. This preserves a longer shared prefix when repeated or similar runs use the same retrieved context.
+
+To compare feature work with and without TAH context, generate paired experiment briefs:
+
+```powershell
+python builder/feature_ab_experiment.py "Best improvements for indexing"
+```
+
+This writes `baseline_prompt.md`, `tah_prompt.md`, `comparison.md`, and `manifest.json` under `workbench/feature_experiments/<timestamp>-<feature>/`.
+
 
 ## 🏗️ Technical Architecture: The v3.6 Binary Spec (80 Bytes)
 The Memoria Protocol utilizes a dual-file "Atlas Handshake" to achieve O(1) surgical retrieval:

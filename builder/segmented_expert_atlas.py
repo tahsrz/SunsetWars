@@ -201,11 +201,11 @@ class SegmentedExpertAtlasQuery:
         self.labels = {row["expertId"]: row for row in rows}
 
     def search(self, query: str, domain_mask: int | None = None, top_n: int = 5, max_segments: int = 8) -> dict:
-        terms = extract_terms(query)[:12]
+        terms = query_search_terms(query)
         query_concepts = extract_concepts(query)
         mask = domain_mask or domain_mask_for_label(query)
         target_complexity = query_complexity_target(query, query_concepts)
-        key = build_route_key(mask, 0, target_complexity, 0.6, 0.5, 0.5)
+        key = build_route_key(mask, 0, target_complexity, 0.9, 0.85, 0.85)
         route_info = self._find_route_segment(key)
         route = route_info["index"]
         fallback_used = False
@@ -423,6 +423,22 @@ def build_atlas_from_cartridges(root: Path, output_base: Path, max_experts: int 
     ]
     expert_id = 1
     source_inputs: dict[str, int] = {}
+
+    for bootstrap in bootstrap_experts():
+        atlas.add_expert(ExpertInput(
+            title=bootstrap["title"],
+            source="expert_atlas.bootstrap",
+            text=bootstrap["text"],
+            expert_id=expert_id,
+            domain_mask=domain_mask_for_label(f"{bootstrap['title']} {bootstrap['text']}"),
+            region_id=0,
+            relevance=0.98,
+            trust=0.95,
+            recency=1.0,
+            keywords=extract_terms(f"{bootstrap['title']} {bootstrap['text']}")[:12],
+        ))
+        expert_id += 1
+
     buckets = [
         {"cartridge": cartridge, "shards": list(extract_text_shards(cartridge)), "cursor": 0}
         for cartridge in cartridges
@@ -494,6 +510,44 @@ def extract_text_shards(tah_path: Path) -> Iterable[str]:
         text = normalize_text(chunk.decode("utf-8", errors="ignore"))
         if len(text) >= 80:
             yield text
+
+
+def bootstrap_experts() -> list[dict[str, str]]:
+    return [
+        {
+            "title": "Semantic Expert Atlas Retrieval Feature",
+            "text": (
+                "The segmented expert atlas compiles SunsetWars cartridges into a fixed population of semantic shard experts. "
+                "Each expert stores concept anchors, density, complexity, vitality, domain mask, local Bloom bits, and "
+                "recursive concept links. Queries begin with a route key over segment ranges, then disqualify lower or "
+                "higher metadata regions before reading the .tah payload."
+            ),
+        },
+        {
+            "title": "Codex Handoff Bridge",
+            "text": (
+                "builder/ollama_codex_bridge.py turns a user request into retrieval tokens and concepts, searches the "
+                "expert atlas, expands into linked cartridge sources, writes workbench/codex_handoffs/latest.md, and can "
+                "invoke Codex. Use --no-codex inside an active Codex session to avoid nested agent launches."
+            ),
+        },
+        {
+            "title": "Feature A/B Experiment Harness",
+            "text": (
+                "builder/feature_ab_experiment.py creates paired baseline and TAH-assisted prompts for one feature. "
+                "The comparison sheet records retrieval time, selected sources, atlas hits, shard hits, and scorecard "
+                "fields for evaluating whether semantic indexing improved implementation quality."
+            ),
+        },
+        {
+            "title": "Expert Atlas Build Command",
+            "text": (
+                "Run python builder/build_segmented_expert_atlas.py from the SunsetWars repo to regenerate "
+                "cartridges/expert_atlas/segmented_expert_atlas.hat, .tah, and .manifest.json. "
+                "EXPERT_ATLAS_MAX_EXPERTS and EXPERT_ATLAS_SEGMENT_SIZE tune population size and segment width."
+            ),
+        },
+    ]
 
 
 def extract_v36_shards(hat_path: Path, tah_path: Path) -> Iterable[str]:
@@ -569,6 +623,13 @@ def extract_terms(text: str) -> list[str]:
     return unique_terms([*bigrams, *words])
 
 
+def query_search_terms(text: str, limit: int = 16) -> list[str]:
+    words = [word for word in re.findall(r"[a-z0-9]+", text.lower()) if len(word) > 2 and word not in STOP_TERMS]
+    # Keep unigram anchors in the search window. Bigrams are useful for precision,
+    # but putting all of them first can evict the core query words on short handoffs.
+    return unique_terms([*words, *extract_terms(text)])[:limit]
+
+
 def is_concept(term: str) -> bool:
     return len(term) >= 4 and not term.isdigit() and ((" " in term) or term not in STOP_TERMS)
 
@@ -593,6 +654,8 @@ def semantic_vitality(text: str, concepts: list[str]) -> float:
 
 
 def query_complexity_target(query: str, concepts: list[str]) -> float:
+    if is_atlas_meta_query(query):
+        return 1.0
     words = query.split()
     if not words:
         return 0.5
@@ -600,6 +663,11 @@ def query_complexity_target(query: str, concepts: list[str]) -> float:
     # Query strings are much shorter than shards, so dampen density toward the middle
     # of the route space instead of letting one-word queries pin to the far edge.
     return clamp01(0.35 + density * 0.4 + min(1.0, len(words) / 18) * 0.25)
+
+
+def is_atlas_meta_query(query: str) -> bool:
+    value = query.lower()
+    return bool(re.search(r"expert atlas|semantic expert|retrieval feature|codex handoff|ollama codex|feature experiment|segmented expert|semantic indexing", value))
 
 
 def segment_rejection_reason(segment: dict, mask: int, terms: list[str], target_complexity: float) -> str | None:
@@ -736,6 +804,7 @@ def domain_mask_for_label(label: str) -> int:
         (r"category|scheme|sicp|lisp|lambda", 4),
         (r"visual|three|mapbox|raster|image|video", 5),
         (r"runtime|combat|matrix|spell|unreal|zustand", 7),
+        (r"semantic|expert atlas|retrieval|handoff|codex|ollama|indexing|feature", 8),
     ]
     mask = 0
     for pattern, bit in patterns:

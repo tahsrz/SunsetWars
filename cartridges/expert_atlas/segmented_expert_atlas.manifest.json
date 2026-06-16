@@ -1,7 +1,7 @@
 {
   "name": "segmented_expert_atlas",
   "format": "segmented-expert-atlas-v1",
-  "generatedAt": "2026-06-15T19:20:58Z",
+  "generatedAt": "2026-06-15T23:48:42Z",
   "expertCount": 400,
   "segmentCount": 25,
   "maxExperts": 400,
@@ -43,12 +43,16 @@
       "experts": 20
     },
     {
+      "name": "expert_atlas.bootstrap",
+      "experts": 4
+    },
+    {
       "name": "medical_encyclopedia.tah",
       "experts": 1
     },
     {
       "name": "operatingSystem.tah",
-      "experts": 20
+      "experts": 19
     },
     {
       "name": "operatingSystem_concept.tah",
@@ -56,7 +60,7 @@
     },
     {
       "name": "operatingSystem_links.tah",
-      "experts": 20
+      "experts": 19
     },
     {
       "name": "operatingSystem_recursive.tah",
@@ -72,7 +76,7 @@
     },
     {
       "name": "pulse_master_v3_6.tah",
-      "experts": 20
+      "experts": 19
     },
     {
       "name": "python_core.tah",
@@ -80,7 +84,7 @@
     },
     {
       "name": "re_rasterizer.tah",
-      "experts": 20
+      "experts": 19
     },
     {
       "name": "sicp.tah",

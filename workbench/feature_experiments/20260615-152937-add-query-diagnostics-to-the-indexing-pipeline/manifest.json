@@ -1,0 +1,26 @@
+{
+  "feature": "Add query diagnostics to the indexing pipeline",
+  "createdAt": "2026-06-15T15:29:38-0500",
+  "experimentPath": "C:\\Users\\Taz\\SunsetWars\\workbench\\feature_experiments\\20260615-152937-add-query-diagnostics-to-the-indexing-pipeline",
+  "retrievalMs": 1048.35,
+  "tokens": [
+    "add",
+    "query",
+    "diagnostics"
+  ],
+  "concepts": [
+    "indexing",
+    "pipeline"
+  ],
+  "ollamaModel": "phi4-mini:latest",
+  "fallbackReason": null,
+  "sources": [],
+  "atlasResults": 1,
+  "shardResults": 0,
+  "files": {
+    "baselinePrompt": "C:\\Users\\Taz\\SunsetWars\\workbench\\feature_experiments\\20260615-152937-add-query-diagnostics-to-the-indexing-pipeline\\baseline_prompt.md",
+    "tahPrompt": "C:\\Users\\Taz\\SunsetWars\\workbench\\feature_experiments\\20260615-152937-add-query-diagnostics-to-the-indexing-pipeline\\tah_prompt.md",
+    "comparison": "C:\\Users\\Taz\\SunsetWars\\workbench\\feature_experiments\\20260615-152937-add-query-diagnostics-to-the-indexing-pipeline\\comparison.md"
+  },
+  "totalMs": 1054.72
+}

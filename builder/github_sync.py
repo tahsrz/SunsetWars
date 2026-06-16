@@ -50,17 +50,29 @@ class GitHubSync:
 
     def extract_shards(self, directory):
         """Recursively extracts vital shards from supported files using Ozriel Protocol."""
-        all_text = ""
+        all_shards = []
         # Support common documentation and code files
-        extensions = {'.md', '.txt', '.py', '.js', '.ts', '.c', '.cpp', '.h', '.cs'}
+        extensions = {
+            '.md', '.mdx', '.txt', '.py', '.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs',
+            '.c', '.cpp', '.h', '.hpp', '.cs', '.html', '.css', '.scss', '.json',
+            '.yml', '.yaml', '.toml', '.sql', '.sh', '.ps1', '.rs', '.go', '.java'
+        }
+        skip_names = {
+            'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'bun.lockb',
+            'node_modules', 'dist', 'build', '.next', '.git'
+        }
         
         for root, _, files in os.walk(directory):
             if '.git' in root: continue
             
             for file in files:
+                if file in skip_names:
+                    continue
                 ext = os.path.splitext(file)[1].lower()
                 if ext in extensions:
                     file_path = os.path.join(root, file)
+                    if os.path.getsize(file_path) > 512_000:
+                        continue
                     try:
                         with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
                             content = f.read()
@@ -68,13 +80,15 @@ class GitHubSync:
                             
                             # Clean markdown frontmatter
                             content = re.sub(r'^---.*?---', '', content, flags=re.DOTALL)
-                            all_text += f"\n\n--- FILE: {file} ---\n\n" + content
+                            rel_path = os.path.relpath(file_path, directory).replace(os.sep, "/")
+                            file_text = f"--- FILE: {rel_path} ---\n\n{content}"
+                            all_shards.extend((shard, rel_path) for shard in OzrielSegmenter.segment(file_text))
                     except Exception as e:
                         print(f"[Memoria-Sync] Warning: Failed to read {file}: {e}")
         
-        return OzrielSegmenter.segment(all_text)
+        return all_shards
 
-    def build_cartridge(self, name):
+    def build_cartridge(self, name, repo_url=None):
         """Processes the synced repo and generates a Memoria vault (.hat + .tah)."""
         source_dir = os.path.join(self.sync_dir, name)
         if not os.path.exists(source_dir):
@@ -92,7 +106,12 @@ class GitHubSync:
         
         added_count = 0
         for shard in shards:
-            builder.add_text_shard(shard)
+            if isinstance(shard, tuple):
+                text, rel_path = shard
+                source_url = f"{repo_url.replace('.git', '')}/blob/main/{rel_path}" if repo_url else f"local://{name}/{rel_path}"
+                builder.add_text_shard(text, url=source_url)
+            else:
+                builder.add_text_shard(shard)
             added_count += 1
                 
         output_base = os.path.join(self.vault_dir, name)
@@ -111,7 +130,7 @@ def main():
     
     sync = GitHubSync()
     if sync.sync_repo(repo_url, name):
-        sync.build_cartridge(name)
+        sync.build_cartridge(name, repo_url)
 
 if __name__ == "__main__":
     main()
