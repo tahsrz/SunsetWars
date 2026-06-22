@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=65"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "tah-builder"
+version = "3.1.0"
+description = "TAH cartridge builder and query library (v3.1)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+
+[project.urls]
+Repository = "https://github.com/tahsrz/SunsetWars"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["builder*"]
